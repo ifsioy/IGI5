@@ -9,9 +9,5 @@
     <a href="{% url 'review-list' %}">Отзывы</a>
     <a href="{% url 'promocode-list' %}">Промокоды</a>
 
-    {% if user.is_authenticated %}
-    <span>Здравствуйте, {{ user.username }}!</span> <a href="{% url 'logout' %}">Выйти</a>
-{% else %}
-    <a href="{% url 'login' %}">Войти</a> | <a href="{% url 'register' %}">Регистрация</a>
-{% endif %}
+
 </nav>
