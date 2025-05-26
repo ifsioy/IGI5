@@ -1,0 +1,9 @@
+<h1>{{ about_content.title }}</h1>
+{% if about_content.image %}
+  <img src="{{ about_content.image.url }}" alt="Изображение" width="300"/>
+{% endif %}
+<p>{{ about_content.body|linebreaks }}</p>
+<p><strong>Порядок отображения:</strong> {{ about_content.order }}</p>
+<a href="{% url 'aboutpagecontent-update' about_content.pk %}">Редактировать</a>
+<a href="{% url 'aboutpagecontent-delete' about_content.pk %}">Удалить</a>
+<a href="{% url 'aboutpagecontent-list' %}">Назад к списку</a>

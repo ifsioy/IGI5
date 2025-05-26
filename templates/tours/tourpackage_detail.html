@@ -1,0 +1,10 @@
+<h1>{{ tourpackage.name }}</h1>
+<p><strong>Отель:</strong> {{ tourpackage.hotel }}</p>
+<p><strong>Длительность (нед):</strong> {{ tourpackage.get_duration_weeks_display }}</p>
+<p><strong>Цена:</strong> {{ tourpackage.price }}</p>
+<p><strong>Описание:</strong> {{ tourpackage.description }}</p>
+<p><strong>Горящая путевка:</strong> {{ tourpackage.is_hot_deal|yesno:"Да,Нет" }}</p>
+<p><strong>Доп. услуги:</strong> {{ tourpackage.additional_services }}</p>
+<a href="{% url 'tourpackage-update' tourpackage.pk %}">Редактировать</a>
+<a href="{% url 'tourpackage-delete' tourpackage.pk %}">Удалить</a>
+<a href="{% url 'tourpackage-list' %}">Назад к списку</a>

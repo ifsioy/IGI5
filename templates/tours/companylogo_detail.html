@@ -1,0 +1,10 @@
+<h1>Логотип компании</h1>
+{% if companylogo.image %}
+  <img src="{{ companylogo.image.url }}" alt="{{ companylogo.alt_text }}" width="200"/>
+{% endif %}
+<p><strong>Alt текст:</strong> {{ companylogo.alt_text }}</p>
+<p><strong>Порядок отображения:</strong> {{ companylogo.order }}</p>
+<p><strong>Активен:</strong> {{ companylogo.is_active|yesno:"Да,Нет" }}</p>
+<a href="{% url 'companylogo-update' companylogo.pk %}">Редактировать</a>
+<a href="{% url 'companylogo-delete' companylogo.pk %}">Удалить</a>
+<a href="{% url 'companylogo-list' %}">Назад к списку</a>

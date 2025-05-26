@@ -1,0 +1,9 @@
+<h1>Страны</h1>
+<a href="{% url 'country-create' %}">Добавить страну</a>
+<ul>
+  {% for country in countries %}
+    <li>
+      <a href="{% url 'country-detail' country.pk %}">{{ country.name }}</a>
+    </li>
+  {% endfor %}
+</ul>

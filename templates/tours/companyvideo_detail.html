@@ -1,0 +1,7 @@
+<h1>{{ companyvideo.title }}</h1>
+<p><strong>Ссылка на видео:</strong> <a href="{{ companyvideo.video_url }}" target="_blank">{{ companyvideo.video_url }}</a></p>
+<p><strong>Порядок отображения:</strong> {{ companyvideo.order }}</p>
+<p><strong>Активно:</strong> {{ companyvideo.is_active|yesno:"Да,Нет" }}</p>
+<a href="{% url 'companyvideo-update' companyvideo.pk %}">Редактировать</a>
+<a href="{% url 'companyvideo-delete' companyvideo.pk %}">Удалить</a>
+<a href="{% url 'companyvideo-list' %}">Назад к списку</a>

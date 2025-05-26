@@ -1,0 +1,6 @@
+<h1>{{ companyrequisite.name }}</h1>
+<p><strong>Значение:</strong> {{ companyrequisite.value }}</p>
+<p><strong>Порядок отображения:</strong> {{ companyrequisite.order }}</p>
+<a href="{% url 'companyrequisite-update' companyrequisite.pk %}">Редактировать</a>
+<a href="{% url 'companyrequisite-delete' companyrequisite.pk %}">Удалить</a>
+<a href="{% url 'companyrequisite-list' %}">Назад к списку</a>

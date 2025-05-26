@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Главная страница</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Главная страница</h1>
+    {% if last_article %}
+        <h2>{{ last_article.title }}</h2>
+        <p>{{ last_article.short_content }}</p>
+        {% if last_article.image %}
+            <img src="{{ last_article.image.url }}" alt="Изображение статьи" style="max-width:300px;">
+        {% endif %}
+        <p><em>Опубликовано: {{ last_article.publication_date|date:"d/m/Y H:i" }}</em></p>
+        <a href="{% url 'article-detail' last_article.pk %}">Читать далее</a>
+    {% else %}
+        <p>Пока нет опубликованных статей.</p>
+    {% endif %}
+</body>
+</html>

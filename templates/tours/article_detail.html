@@ -1,0 +1,10 @@
+<h1>{{ article.title }}</h1>
+<p><strong>Автор:</strong> {{ article.author }}</p>
+<p><strong>Дата создания:</strong> {{ article.created_at }}</p>
+<p><strong>Последнее обновление:</strong> {{ article.updated_at }}</p>
+<div>
+  {{ article.content|linebreaks }}
+</div>
+<a href="{% url 'article-update' article.pk %}">Редактировать</a>
+<a href="{% url 'article-delete' article.pk %}">Удалить</a>
+<a href="{% url 'article-list' %}">Назад к списку</a>

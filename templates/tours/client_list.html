@@ -1,0 +1,10 @@
+<h1>Клиенты</h1>
+<a href="{% url 'client-create' %}">Добавить клиента</a>
+<ul>
+  {% for client in clients %}
+    <li>
+      <a href="{% url 'client-detail' client.pk %}">{{ client }}</a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

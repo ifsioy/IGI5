@@ -1,0 +1,10 @@
+<h1>Путевки</h1>
+<a href="{% url 'tourpackage-create' %}">Добавить путевку</a>
+<ul>
+  {% for tourpackage in tourpackages %}
+    <li>
+      <a href="{% url 'tourpackage-detail' tourpackage.pk %}">{{ tourpackage }}</a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

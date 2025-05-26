@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отзывы</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Отзывы</h1>
+    {% for review in reviews %}
+        <div style="border:1px solid #ccc; margin:10px 0; padding:10px;">
+            <strong>
+                {{ review.client.get_full_name|default:review.client.username }}
+            </strong>
+            <span>Оценка: {{ review.rating }}/5</span><br>
+            <p>{{ review.text }}</p>
+            <small>Дата: {{ review.created_at|date:"d.m.Y H:i" }}</small>
+        </div>
+    {% empty %}
+        <p>Отзывов пока нет.</p>
+    {% endfor %}
+</body>
+</html>

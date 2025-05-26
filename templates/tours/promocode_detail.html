@@ -1,0 +1,8 @@
+<h1>Промокод: {{ promocode.code }}</h1>
+<p><strong>Скидка:</strong> {{ promocode.discount_percent }}%</p>
+<p><strong>Действует с:</strong> {{ promocode.valid_from }}</p>
+<p><strong>Действует до:</strong> {{ promocode.valid_to }}</p>
+<p><strong>Активен:</strong> {{ promocode.is_active|yesno:"Да,Нет" }}</p>
+<a href="{% url 'promocode-update' promocode.pk %}">Редактировать</a>
+<a href="{% url 'promocode-delete' promocode.pk %}">Удалить</a>
+<a href="{% url 'promocode-list' %}">Назад к списку</a>

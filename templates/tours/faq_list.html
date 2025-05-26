@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Словарь терминов</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Словарь терминов</h1>
+    {% for faq in faqs %}
+        <div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+            <strong>Вопрос:</strong> {{ faq.question }}<br>
+            <strong>Ответ:</strong> {{ faq.answer }}<br>
+            <small>Добавлено: {{ faq.added_at|date:"d.m.Y H:i" }}</small>
+        </div>
+    {% empty %}
+        <p>Словарь пока пуст.</p>
+    {% endfor %}
+
+</body>
+</html>

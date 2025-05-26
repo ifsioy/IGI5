@@ -1,0 +1,16 @@
+<h1>Логотипы компании</h1>
+<a href="{% url 'companylogo-create' %}">Добавить логотип</a>
+<ul>
+  {% for companylogo in companylogos %}
+    <li>
+      <a href="{% url 'companylogo-detail' companylogo.pk %}">
+        {% if companylogo.image %}
+          <img src="{{ companylogo.image.url }}" alt="{{ companylogo.alt_text }}" width="80" style="vertical-align:middle"/>
+        {% endif %}
+        {{ companylogo.alt_text }}
+      </a>
+      {% if not companylogo.is_active %}<span style="color:gray;">(неактивен)</span>{% endif %}
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

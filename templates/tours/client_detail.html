@@ -1,0 +1,11 @@
+<h1>{{ client }}</h1>
+<p><strong>Пользователь:</strong> {{ client.user.username }}</p>
+<p><strong>Фамилия:</strong> {{ client.user.last_name }}</p>
+<p><strong>Имя:</strong> {{ client.user.first_name }}</p>
+<p><strong>Отчество:</strong> {{ client.patronymic }}</p>
+<p><strong>Адрес:</strong> {{ client.address }}</p>
+<p><strong>Телефон:</strong> {{ client.phone_number }}</p>
+<p><strong>Дата рождения:</strong> {{ client.birth_date }}</p>
+<a href="{% url 'client-update' client.pk %}">Редактировать</a>
+<a href="{% url 'client-delete' client.pk %}">Удалить</a>
+<a href="{% url 'client-list' %}">Назад к списку</a>

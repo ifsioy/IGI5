@@ -1,0 +1,7 @@
+<h1>Удалить промокод</h1>
+<p>Вы уверены, что хотите удалить промокод "{{ object.code }}"?</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Удалить</button>
+</form>
+<a href="{% url 'promocode-list' %}">Отмена</a>

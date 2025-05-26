@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>О компании</title>
+</head>
+<body>
+
+    {% include "tours/nav.html" %}
+    <h1>О компании</h1>
+    {% if about_content %}
+        <div>
+            <p>{{ about_content.main_text }}</p>
+        </div>
+    {% endif %}
+
+    <h2>Видео</h2>
+    {% for video in videos %}
+        <div>
+            <strong>{{ video.title }}</strong><br>
+            <a href="{{ video.video_url }}" target="_blank">{{ video.video_url }}</a>
+            {% if video.description %}
+                <p>{{ video.description }}</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Видео отсутствуют.</p>
+    {% endfor %}
+
+    <h2>Логотипы</h2>
+    {% for logo in logos %}
+        <div>
+            <strong>{{ logo.title }}</strong><br>
+            <img src="{{ logo.logo_image.url }}" alt="Логотип" style="max-height:100px;">
+            {% if logo.description %}
+                <p>{{ logo.description }}</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Логотипы отсутствуют.</p>
+    {% endfor %}
+
+    <h2>История компании</h2>
+    {% for item in history %}
+        <div>
+            <b>{{ item.year }}</b> — {{ item.event_description }}
+        </div>
+    {% empty %}
+        <p>История компании отсутствует.</p>
+    {% endfor %}
+
+    <h2>Реквизиты</h2>
+    <table border="1">
+        <tr><th>Наименование</th><th>Значение</th></tr>
+        {% for req in requisites %}
+            <tr>
+                <td>{{ req.name }}</td>
+                <td>{{ req.value }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="2">Реквизиты отсутствуют.</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,8 @@
+<h1>{{ vacancy.title }}</h1>
+<p><strong>Описание:</strong> {{ vacancy.description }}</p>
+<p><strong>Требования:</strong> {{ vacancy.requirements }}</p>
+<p><strong>Зарплата:</strong> {{ vacancy.salary }}</p>
+<p><strong>Активна:</strong> {{ vacancy.is_active|yesno:"Да,Нет" }}</p>
+<a href="{% url 'vacancy-update' vacancy.pk %}">Редактировать</a>
+<a href="{% url 'vacancy-delete' vacancy.pk %}">Удалить</a>
+<a href="{% url 'vacancy-list' %}">Назад к списку</a>

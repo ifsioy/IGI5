@@ -1,0 +1,10 @@
+<h1>Отели</h1>
+<a href="{% url 'hotel-create' %}">Добавить отель</a>
+<ul>
+  {% for hotel in hotels %}
+    <li>
+      <a href="{% url 'hotel-detail' hotel.pk %}">{{ hotel }}</a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

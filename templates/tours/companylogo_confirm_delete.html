@@ -1,0 +1,7 @@
+<h1>Удалить логотип</h1>
+<p>Вы уверены, что хотите удалить логотип "{{ object.alt_text }}"?</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Удалить</button>
+</form>
+<a href="{% url 'companylogo-list' %}">Отмена</a>

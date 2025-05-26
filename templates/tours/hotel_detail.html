@@ -1,0 +1,11 @@
+<h1>{{ hotel }}</h1>
+<p><strong>Страна:</strong> {{ hotel.country }}</p>
+<p><strong>Звезды:</strong> {{ hotel.get_stars_display }}</p>
+<p><strong>Описание:</strong> {{ hotel.description }}</p>
+<p><strong>Цена за ночь:</strong> {{ hotel.price_per_night }}</p>
+{% if hotel.photo %}
+  <img src="{{ hotel.photo.url }}" alt="Фото отеля" width="300"/>
+{% endif %}
+<a href="{% url 'hotel-update' hotel.pk %}">Редактировать</a>
+<a href="{% url 'hotel-delete' hotel.pk %}">Удалить</a>
+<a href="{% url 'hotel-list' %}">Назад к списку</a>

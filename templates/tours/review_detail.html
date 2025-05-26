@@ -1,0 +1,9 @@
+<h1>Отзыв</h1>
+<p><strong>Автор:</strong> {{ review.author }}</p>
+<p><strong>Путевка:</strong> {{ review.tour_package }}</p>
+<p><strong>Оценка:</strong> {{ review.rating }}</p>
+<p><strong>Текст:</strong> {{ review.text }}</p>
+<p><strong>Дата:</strong> {{ review.created_at }}</p>
+<a href="{% url 'review-update' review.pk %}">Редактировать</a>
+<a href="{% url 'review-delete' review.pk %}">Удалить</a>
+<a href="{% url 'review-list' %}">Назад к списку</a>

@@ -1,0 +1,7 @@
+<h1>{% if form.instance.pk %}Редактировать логотип{% else %}Добавить логотип{% endif %}</h1>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Сохранить</button>
+</form>
+<a href="{% url 'companylogo-list' %}">Назад к списку</a>

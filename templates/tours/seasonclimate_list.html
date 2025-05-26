@@ -1,0 +1,12 @@
+<h1>Климат по сезонам</h1>
+<a href="{% url 'seasonclimate-create' %}">Добавить климат</a>
+<ul>
+  {% for climate in climates %}
+    <li>
+      <a href="{% url 'seasonclimate-detail' climate.pk %}">
+        {{ climate.country }} — {{ climate.get_season_display }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

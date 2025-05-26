@@ -1,0 +1,11 @@
+<h1>Видеоролики компании</h1>
+<a href="{% url 'companyvideo-create' %}">Добавить видео</a>
+<ul>
+  {% for companyvideo in companyvideos %}
+    <li>
+      <a href="{% url 'companyvideo-detail' companyvideo.pk %}">{{ companyvideo.title }}</a>
+      {% if not companyvideo.is_active %}<span style="color:gray;">(неактивно)</span>{% endif %}
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

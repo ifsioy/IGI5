@@ -1,0 +1,5 @@
+<h1>{{ faq.question }}</h1>
+<p><strong>Ответ:</strong> {{ faq.answer }}</p>
+<a href="{% url 'faq-update' faq.pk %}">Редактировать</a>
+<a href="{% url 'faq-delete' faq.pk %}">Удалить</a>
+<a href="{% url 'faq-list' %}">Назад к списку</a>

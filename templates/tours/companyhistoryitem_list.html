@@ -1,0 +1,12 @@
+<h1>История компании</h1>
+<a href="{% url 'companyhistoryitem-create' %}">Добавить событие</a>
+<ul>
+  {% for history_item in history_items %}
+    <li>
+      <a href="{% url 'companyhistoryitem-detail' history_item.pk %}">
+        {{ history_item.title }} ({{ history_item.date }})
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

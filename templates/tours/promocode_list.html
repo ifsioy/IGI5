@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Промокоды и купоны</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Промокоды и купоны</h1>
+
+    <h2>Действующие промокоды</h2>
+    {% for promo in active_promocodes %}
+        <div style="border:1px solid #4CAF50; padding:10px; margin:10px 0;">
+            <h3>{{ promo.code }}</h3>
+            <p><strong>Скидка:</strong> {{ promo.discount }}%</p>
+            {% if promo.description %}
+                <p>{{ promo.description }}</p>
+            {% endif %}
+            <p>Действует с {{ promo.valid_from|date:"d.m.Y" }} по {{ promo.valid_until|date:"d.m.Y" }}</p>
+        </div>
+    {% empty %}
+        <p>Действующих промокодов нет.</p>
+    {% endfor %}
+
+    <h2>Архивные промокоды</h2>
+    {% for promo in archived_promocodes %}
+        <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+            <h3>{{ promo.code }}</h3>
+            <p><strong>Скидка:</strong> {{ promo.discount }}%</p>
+            {% if promo.description %}
+                <p>{{ promo.description }}</p>
+            {% endif %}
+            <p>Действовал с {{ promo.valid_from|date:"d.m.Y" }} по {{ promo.valid_until|date:"d.m.Y" }}</p>
+            <p><em>Статус: {% if not promo.is_active %}Неактивен{% else %}Истек срок действия{% endif %}</em></p>
+        </div>
+    {% empty %}
+        <p>Архивных промокодов нет.</p>
+    {% endfor %}
+</body>
+</html>

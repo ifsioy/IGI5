@@ -1,0 +1,7 @@
+<h1>Удалить климат</h1>
+<p>Вы уверены, что хотите удалить климат для {{ object.country }} — {{ object.get_season_display }}?</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Удалить</button>
+</form>
+<a href="{% url 'seasonclimate-list' %}">Отмена</a>

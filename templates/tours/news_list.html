@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Новости</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Новости</h1>
+    {% for article in articles %}
+        <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+            <h2>
+                <a href="{% url 'article-detail' article.pk %}">{{ article.title }}</a>
+            </h2>
+            <p>{{ article.short_content }}</p>
+            {% if article.image %}
+                <img src="{{ article.image.url }}" alt="Картинка к статье" style="max-width:200px;">
+            {% endif %}
+            <p><em>Опубликовано: {{ article.publication_date|date:"d/m/Y H:i" }}</em></p>
+        </div>
+    {% empty %}
+        <p>Статей пока нет.</p>
+    {% endfor %}
+
+</body>
+</html>

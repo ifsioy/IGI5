@@ -1,0 +1,5 @@
+<h1>{{ climate.country }} — {{ climate.get_season_display }}</h1>
+<p><strong>Описание климата:</strong> {{ climate.climate_description }}</p>
+<a href="{% url 'seasonclimate-update' climate.pk %}">Редактировать</a>
+<a href="{% url 'seasonclimate-delete' climate.pk %}">Удалить</a>
+<a href="{% url 'seasonclimate-list' %}">Назад к списку</a>

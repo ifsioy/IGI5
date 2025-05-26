@@ -1,0 +1,10 @@
+<h1>Реквизиты компании</h1>
+<a href="{% url 'companyrequisite-create' %}">Добавить реквизит</a>
+<ul>
+  {% for companyrequisite in companyrequisites %}
+    <li>
+      <a href="{% url 'companyrequisite-detail' companyrequisite.pk %}">{{ companyrequisite.name }}</a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

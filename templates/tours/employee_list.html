@@ -1,0 +1,10 @@
+<h1>Сотрудники</h1>
+<a href="{% url 'employee-create' %}">Добавить сотрудника</a>
+<ul>
+  {% for employee in employees %}
+    <li>
+      <a href="{% url 'employee-detail' employee.pk %}">{{ employee }}</a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

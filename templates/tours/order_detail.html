@@ -1,0 +1,9 @@
+<h1>Заказ #{{ order.id }}</h1>
+<p><strong>Клиент:</strong> {{ order.client }}</p>
+<p><strong>Путевка:</strong> {{ order.tour_package }}</p>
+<p><strong>Дата:</strong> {{ order.date }}</p>
+<p><strong>Статус:</strong> {{ order.status }}</p>
+<p><strong>Комментарий:</strong> {{ order.comment }}</p>
+<a href="{% url 'order-update' order.pk %}">Редактировать</a>
+<a href="{% url 'order-delete' order.pk %}">Удалить</a>
+<a href="{% url 'order-list' %}">Назад к списку</a>

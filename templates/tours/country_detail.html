@@ -1,0 +1,5 @@
+<h1>{{ country.name }}</h1>
+<p>{{ country.description }}</p>
+<a href="{% url 'country-update' country.pk %}">Редактировать</a>
+<a href="{% url 'country-delete' country.pk %}">Удалить</a>
+<a href="{% url 'country-list' %}">Назад к списку</a>

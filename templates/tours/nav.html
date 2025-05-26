@@ -1,0 +1,17 @@
+<nav>
+    <a href="{% url 'home' %}">Главная</a> |
+    <a href="{% url 'about' %}">О компании</a> |
+    <a href="{% url 'news-list' %}">Новости</a> |
+    <a href="{% url 'faq-list' %}">Словарь терминов</a> |
+    <a href="{% url 'contacts' %}">Контакты</a>
+    <a href="{% url 'privacy-policy' %}">Политика конфиденциальности</a>
+    <a href="{% url 'vacancy-list' %}">Вакансии</a>
+    <a href="{% url 'review-list' %}">Отзывы</a>
+    <a href="{% url 'promocode-list' %}">Промокоды</a>
+
+    {% if user.is_authenticated %}
+    <span>Здравствуйте, {{ user.username }}!</span> <a href="{% url 'logout' %}">Выйти</a>
+{% else %}
+    <a href="{% url 'login' %}">Войти</a> | <a href="{% url 'register' %}">Регистрация</a>
+{% endif %}
+</nav>

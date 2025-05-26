@@ -1,0 +1,10 @@
+<h1>О компании (About Page Content)</h1>
+<a href="{% url 'aboutpagecontent-create' %}">Добавить секцию</a>
+<ul>
+  {% for about_content in about_contents %}
+    <li>
+      <a href="{% url 'aboutpagecontent-detail' about_content.pk %}">{{ about_content.title }}</a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="/">На главную</a>

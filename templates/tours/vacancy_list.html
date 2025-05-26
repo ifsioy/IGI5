@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вакансии</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Вакансии</h1>
+    {% for vacancy in vacancies %}
+        <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+            <h2>{{ vacancy.title }}</h2>
+            <p>{{ vacancy.description }}</p>
+            <p><em>Опубликовано: {{ vacancy.publication_date|date:"d.m.Y" }}</em></p>
+        </div>
+    {% empty %}
+        <p>Открытых вакансий нет.</p>
+    {% endfor %}
+</body>
+</html>
