@@ -754,52 +754,62 @@ class CompanyLogoDeleteView(DeleteView):
     template_name = 'tours/companylogo_confirm_delete.html'
     success_url = reverse_lazy('companylogo-list')
 
+
 class CompanyHistoryItemListView(ListView):
     model = CompanyHistoryItem
     template_name = 'tours/companyhistoryitem_list.html'
-    context_object_name = 'history_items'
+    context_object_name = 'history_items'  # Or your preferred name like 'object_list'
+
 
 class CompanyHistoryItemDetailView(DetailView):
     model = CompanyHistoryItem
     template_name = 'tours/companyhistoryitem_detail.html'
-    context_object_name = 'history_item'
+    context_object_name = 'object'  # Default is 'object', can be 'history_item' if you prefer
+
 
 class CompanyHistoryItemCreateView(CreateView):
     model = CompanyHistoryItem
-    fields = ['title', 'description', 'date', 'image', 'order']
+    fields = ['year', 'event_description']  # Corrected fields
     template_name = 'tours/companyhistoryitem_form.html'
-    success_url = reverse_lazy('companyhistoryitem-list')
+    success_url = reverse_lazy('companyhistoryitem-list')  # Added namespace
+
 
 class CompanyHistoryItemUpdateView(UpdateView):
     model = CompanyHistoryItem
-    fields = ['title', 'description', 'date', 'image', 'order']
+    fields = ['year', 'event_description']  # Corrected fields
     template_name = 'tours/companyhistoryitem_form.html'
+
+    # success_url = reverse_lazy('tours:companyhistoryitem-list') # Original
+
+    def get_success_url(self):  # More typical for UpdateView
+        return reverse_lazy('companyhistoryitem-detail', kwargs={'pk': self.object.pk})
+
+
+class CompanyHistoryItemDeleteView(DeleteView):  # Ensure this view exists if used by templates
+    model = CompanyHistoryItem
+    template_name = 'tours/companyhistoryitem_confirm_delete.html'  # Standard template name
     success_url = reverse_lazy('companyhistoryitem-list')
 
-class CompanyHistoryItemDeleteView(DeleteView):
-    model = CompanyHistoryItem
-    template_name = 'tours/companyhistoryitem_confirm_delete.html'
-    success_url = reverse_lazy('companyhistoryitem-list')
 
 class CompanyRequisiteListView(ListView):
     model = CompanyRequisite
     template_name = 'tours/companyrequisite_list.html'
-    context_object_name = 'companyrequisites'
+    context_object_name = 'companyrequisite_list'
 
 class CompanyRequisiteDetailView(DetailView):
     model = CompanyRequisite
     template_name = 'tours/companyrequisite_detail.html'
-    context_object_name = 'companyrequisite'
+    context_object_name = 'companyrequisite_detail'
 
 class CompanyRequisiteCreateView(CreateView):
     model = CompanyRequisite
-    fields = ['name', 'value', 'order']
+    fields = ['name', 'value']
     template_name = 'tours/companyrequisite_form.html'
     success_url = reverse_lazy('companyrequisite-list')
 
 class CompanyRequisiteUpdateView(UpdateView):
     model = CompanyRequisite
-    fields = ['name', 'value', 'order']
+    fields = ['name', 'value']
     template_name = 'tours/companyrequisite_form.html'
     success_url = reverse_lazy('companyrequisite-list')
 

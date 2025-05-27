@@ -1,10 +1,22 @@
+{% comment %} In templates/tours/companyrequisite_list.html {% endcomment %}
 <h1>Реквизиты компании</h1>
-<a href="{% url 'companyrequisite-create' %}">Добавить реквизит</a>
-<ul>
-  {% for companyrequisite in companyrequisites %}
-    <li>
-      <a href="{% url 'companyrequisite-detail' companyrequisite.pk %}">{{ companyrequisite.name }}</a>
-    </li>
-  {% endfor %}
-</ul>
-<a href="/">На главную</a>
+
+<a href="{% url 'companyrequisite-create' %}">Добавить новый реквизит</a>
+
+{% if companyrequisite_list %}
+    <ul>
+        {% for requisite in companyrequisite_list %}  {# Используйте companyrequisite_list здесь #}
+            <li>
+                {{ requisite.name }}: {{ requisite.value }}
+                <a href="{% url 'companyrequisite-detail' requisite.pk %}">Просмотр</a>
+                <a href="{% url 'companyrequisite-update' requisite.pk %}">Редактировать</a>
+                <a href="{% url 'companyrequisite-delete' requisite.pk %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Реквизитов компании пока нет.</p>
+{% endif %}
+
+<br>
+<a href="{% url 'home' %}">На главную</a>

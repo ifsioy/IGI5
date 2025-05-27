@@ -1,7 +1,11 @@
-<h1>{% if form.instance.pk %}Редактировать событие{% else %}Добавить событие{% endif %}</h1>
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Сохранить</button>
+{% comment %} In templates/tours/companyhistoryitem_form.html {% endcomment %}
+<h1>{% if object %}Редактировать запись истории{% else %}Добавить новую запись в историю{% endif %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}  {# This will render all form fields as paragraphs #}
+    <button type="submit">Сохранить</button>
 </form>
-<a href="{% url 'companyhistoryitem-list' %}">Назад к списку</a>
+
+<br>
+<a href="{% if object %}{% url 'companyhistoryitem-detail' object.pk %}{% else %}{% url 'companyhistoryitem-list' %}{% endif %}">Отмена</a>

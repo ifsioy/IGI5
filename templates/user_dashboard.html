@@ -91,3 +91,12 @@
 {% else %}
     <p>Тип профиля не определён.</p>
 {% endif %}
+{% if user.is_staff %}
+  <div class="employee-section" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+    <h4>Панель сотрудника:</h4>
+    <ul>
+      <li><a href="{% url 'companyhistoryitem-list' %}">Управление историей компании</a></li>
+      <li><a href="{% url 'companyrequisite-list' %}">Управление реквизитами компании</a></li>
+    </ul>
+  </div>
+{% endif %}

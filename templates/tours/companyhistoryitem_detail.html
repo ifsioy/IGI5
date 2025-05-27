@@ -1,10 +1,7 @@
-<h1>{{ history_item.title }}</h1>
-<p><strong>Дата:</strong> {{ history_item.date }}</p>
-{% if history_item.image %}
-  <img src="{{ history_item.image.url }}" alt="{{ history_item.title }}" width="300"/>
-{% endif %}
-<p>{{ history_item.description|linebreaks }}</p>
-<p><strong>Порядок отображения:</strong> {{ history_item.order }}</p>
-<a href="{% url 'companyhistoryitem-update' history_item.pk %}">Редактировать</a>
-<a href="{% url 'companyhistoryitem-delete' history_item.pk %}">Удалить</a>
-<a href="{% url 'companyhistoryitem-list' %}">Назад к списку</a>
+{% comment %} In templates/tours/companyhistoryitem_detail.html {% endcomment %}
+<h1>{{ object.year }} - {{ object.event_description }}</h1> {# Adjust field names #}
+
+<a href="{% url 'companyhistoryitem-update' object.pk %}">Редактировать</a>
+<a href="{% url 'companyhistoryitem-delete' object.pk %}">Удалить</a>
+<br>
+<a href="{% url 'companyhistoryitem-list' %}">Назад к списку истории</a>

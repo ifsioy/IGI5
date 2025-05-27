@@ -1,12 +1,21 @@
+{% comment %} In templates/tours/companyhistoryitem_list.html {% endcomment %}
 <h1>История компании</h1>
-<a href="{% url 'companyhistoryitem-create' %}">Добавить событие</a>
-<ul>
-  {% for history_item in history_items %}
-    <li>
-      <a href="{% url 'companyhistoryitem-detail' history_item.pk %}">
-        {{ history_item.title }} ({{ history_item.date }})
-      </a>
-    </li>
-  {% endfor %}
-</ul>
-<a href="/">На главную</a>
+
+<a href="{% url 'companyhistoryitem-create' %}">Добавить новую запись</a>
+
+{% if object_list %}
+    <ul>
+        {% for item in object_list %}
+            <li>
+                {{ item.year }} - {{ item.event_description }}
+                <a href="{% url 'companyhistoryitem-detail' item.pk %}">Просмотр</a>
+                <a href="{% url 'companyhistoryitem-update' item.pk %}">Редактировать</a>
+                <a href="{% url 'companyhistoryitem-delete' item.pk %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Записей в истории компании пока нет.</p>
+{% endif %}
+
+<a href="{% url 'home' %}">На главную</a>

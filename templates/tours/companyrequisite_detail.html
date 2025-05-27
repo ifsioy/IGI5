@@ -1,6 +1,9 @@
-<h1>{{ companyrequisite.name }}</h1>
-<p><strong>Значение:</strong> {{ companyrequisite.value }}</p>
-<p><strong>Порядок отображения:</strong> {{ companyrequisite.order }}</p>
-<a href="{% url 'companyrequisite-update' companyrequisite.pk %}">Редактировать</a>
-<a href="{% url 'companyrequisite-delete' companyrequisite.pk %}">Удалить</a>
-<a href="{% url 'companyrequisite-list' %}">Назад к списку</a>
+<h1>Реквизит: {{ object.name }}</h1>
+<p>Значение: {{ object.value }}</p>
+
+<a href="{% url 'companyrequisite-update' object.pk %}">Редактировать</a>
+<a href="{% url 'companyrequisite-delete' object.pk %}">Удалить</a>
+
+<br>
+<a href="{% url 'companyrequisite-list' %}">К списку реквизитов</a>
+<a href="{% url 'home' %}">На главную</a>
