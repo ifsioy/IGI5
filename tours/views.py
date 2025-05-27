@@ -1,10 +1,12 @@
 import calendar
+import logging
 from datetime import datetime
 from statistics import median, mode
 
 import pytz
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
@@ -16,8 +18,33 @@ from .models import Country, ClientProfile, EmployeeProfile, SeasonClimate, Hote
     Vacancy, Review, PromoCode, AboutPageContent, CompanyVideo, CompanyLogo, CompanyHistoryItem, CompanyRequisite
 
 import requests
-from django.conf import settings
-from django.shortcuts import render
+import matplotlib.pyplot as plt
+import io
+import base64
+
+logger = logging.getLogger('tours')
+
+def sales_distribution_chart(request):
+    tours = TourPackage.objects.values('name', 'price')
+    names = [tour['name'] for tour in tours]
+    prices = [tour['price'] for tour in tours]
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(names, prices, color='skyblue')
+    plt.title('Распределение цен туров')
+    plt.xlabel('Название тура')
+    plt.ylabel('Цена')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    string = base64.b64encode(buf.read())
+    uri = 'data:image/png;base64,' + string.decode('utf-8')
+    buf.close()
+
+    return render(request, 'sales_chart.html', {'chart_uri': uri})
 
 def currency_page(request):
     url = 'https://open.er-api.com/v6/latest/RUB'
@@ -50,7 +77,7 @@ def weather_page(request):
                 'city': city,
                 'temp': current['temp_C'],
                 'desc': current['weatherDesc'][0]['value'],
-                'icon': None  # У wttr.in нет иконок, можно добавить через weatherDesc
+                'icon': None
             })
         except Exception as e:
             weather_data.append({
@@ -63,69 +90,74 @@ def weather_page(request):
 
 
 def tours_catalog(request):
-    # фильтры из GET-запроса
-    price_min = request.GET.get('price_min')
-    price_max = request.GET.get('price_max')
-    country_id = request.GET.get('country')
-    hotel_class = request.GET.get('hotel_class')
-    is_hot = request.GET.get('is_hot')
-    service = request.GET.get('service')
+    try:
+        logger.info('Запрос к каталогу туров')
+        price_min = request.GET.get('price_min')
+        price_max = request.GET.get('price_max')
+        country_id = request.GET.get('country')
+        hotel_class = request.GET.get('hotel_class')
+        is_hot = request.GET.get('is_hot')
+        service = request.GET.get('service')
+        search_query = request.GET.get('search')
+        sort_by = request.GET.get('sort_by')
 
-    tours = TourPackage.objects.select_related('hotel', 'hotel__country').all()
+        tours = TourPackage.objects.all()
 
-    if price_min:
-        tours = tours.filter(price__gte=price_min)
-    if price_max:
-        tours = tours.filter(price__lte=price_max)
-    if country_id:
-        tours = tours.filter(hotel__country__id=country_id)
-    if hotel_class:
-        tours = tours.filter(hotel__stars=hotel_class)
-    if is_hot:
-        tours = tours.filter(is_hot_deal=True)
-    if service:
-        tours = tours.filter(additional_services__icontains=service)
+        if price_min:
+            tours = tours.filter(price__gte=price_min)
+        if price_max:
+            tours = tours.filter(price__lte=price_max)
+        if country_id:
+            tours = tours.filter(hotel__country__id=country_id)
+        if hotel_class:
+            tours = tours.filter(hotel__stars=hotel_class)
+        if is_hot:
+            tours = tours.filter(is_hot_deal=True)
+        if service:
+            tours = tours.filter(additional_services__icontains=service)
 
-    hotels = Hotel.objects.select_related('country').all()
-    countries = Country.objects.all()
-    promo_codes = [p for p in PromoCode.objects.all() if p.is_currently_active]
-    # Купоны — если есть отдельная модель, тоже добавь
+        logger.debug(f'Найдено {tours.count()} туров после фильтрации')
+        if sort_by:
+            if sort_by in ['price', 'name', 'created_at']:
+                tours = tours.order_by(sort_by)
+            elif sort_by == '-price':
+                tours = tours.order_by('-price')
 
-    return render(request, 'tours_catalog.html', {
-        'tours': tours,
-        'hotels': hotels,
-        'countries': countries,
-        'promo_codes': promo_codes,
-        'filters': {
-            'price_min': price_min,
-            'price_max': price_max,
-            'country_id': country_id,
-            'hotel_class': hotel_class,
-            'is_hot': is_hot,
-            'service': service,
-        }
-    })
+        hotels = Hotel.objects.select_related('country').all()
+        countries = Country.objects.all()
+        promo_codes = [p for p in PromoCode.objects.all() if p.is_currently_active]
 
-from datetime import datetime
-import pytz
-import calendar
-from django.db.models import Avg, Count, Sum
-from django.shortcuts import render
-from django.utils.timezone import now
-from statistics import median, mode
-from .models import ClientProfile, EmployeeProfile, TourPackage, PromoCode
+        return render(request, 'tours_catalog.html', {
+            'tours': tours,
+            'hotels': hotels,
+            'countries': countries,
+            'promo_codes': promo_codes,
+            'filters': {
+                'price_min': price_min,
+                'price_max': price_max,
+                'country_id': country_id,
+                'hotel_class': hotel_class,
+                'is_hot': is_hot,
+                'service': service,
+                'search_query': search_query,
+                'sort_by': sort_by,
+            }
+        })
+    except Exception as e:
+        logger.error(f'Ошибка при загрузке каталога туров: {e}', exc_info=True)
+        return HttpResponse('Произошла ошибка при загрузке каталога', status=500)
+
+
 
 @login_required
 def user_dashboard(request):
     user = request.user
     now_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    user_timezone = getattr(user, 'timezone', 'Europe/Moscow')  # Тайм-зона пользователя, можно заменить на поле модели
+    user_timezone = getattr(user, 'timezone', 'Europe/Moscow')
     local_now = now_utc.astimezone(pytz.timezone(user_timezone))
 
-    # Текущий текстовый календарь
     current_month_calendar = calendar.TextCalendar().formatmonth(local_now.year, local_now.month)
 
-    # Даты добавления/изменения данных для текущего пользователя
     client_profile = getattr(user, 'clientprofile', None)
     employee_profile = getattr(user, 'employeeprofile', None)
 
@@ -136,7 +168,6 @@ def user_dashboard(request):
     else:
         recent_tours = []
 
-    # Статистика по продажам (общая)
     sales_data = TourPackage.objects.aggregate(
         avg_sale=Avg('price'),
         total_sales=Sum('price')
@@ -145,7 +176,6 @@ def user_dashboard(request):
     sales_median = median(all_sales_prices) if all_sales_prices else None
     sales_mode = mode(all_sales_prices) if all_sales_prices else None
 
-    # Возраст клиентов (общая статистика)
     current_year = timezone.now().year
     client_ages = [
         current_year - client.birth_date.year
@@ -154,7 +184,6 @@ def user_dashboard(request):
     age_median = median(client_ages) if client_ages else None
     age_avg = sum(client_ages) / len(client_ages) if client_ages else None
 
-    # Популярность и прибыльность товаров (общая статистика)
     popular_packages = (
         TourPackage.objects.values('name')
         .annotate(count=Count('id'))
@@ -168,7 +197,6 @@ def user_dashboard(request):
         .first()
     )
 
-    # Общий контекст
     context = {
         'user': user,
         'current_time_utc': now_utc.strftime('%d/%m/%Y %H:%M:%S'),
@@ -188,7 +216,6 @@ def user_dashboard(request):
         },
     }
 
-    # Добавляем данные профиля
     if client_profile:
         tours = client_profile.tour_packages.select_related('hotel')
         promo_codes = PromoCode.objects.filter(is_active=True, valid_from__lte=now_utc, valid_until__gte=now_utc)
@@ -214,7 +241,6 @@ def user_dashboard(request):
 
 @login_required
 def client_dashboard(request):
-    # Проверка: у пользователя есть профиль клиента
     client = get_object_or_404(ClientProfile, user=request.user)
     tours = TourPackage.objects.filter(client=client)
     now = timezone.now().date()
@@ -227,9 +253,7 @@ def client_dashboard(request):
 
 @login_required
 def employee_dashboard(request):
-    # Проверка: у пользователя есть профиль сотрудника
     employee = get_object_or_404(EmployeeProfile, user=request.user)
-    # Все клиенты и их путёвки (или фильтруй только «своих» клиентов, если есть связь)
     clients = ClientProfile.objects.prefetch_related('tour_packages')
     sales = TourPackage.objects.select_related('client', 'hotel')
     return render(request, 'employee_dashboard.html', {
@@ -243,16 +267,13 @@ def employee_dashboard(request):
 def admin_clients_with_tours(request):
     from django.db.models import Sum, Count, Prefetch
 
-    # Получаем клиентов и их путёвки
     clients = ClientProfile.objects.prefetch_related('tour_packages__hotel__country')
     client_tour_stats = ClientProfile.objects.annotate(
         tour_count=Count('tour_packages'),
         total_cost=Sum('tour_packages__price')
     )
-    # Получаем все отели с их странами и климатом
     hotels = Hotel.objects.select_related('country')
 
-    # Для таблицы "Количество путевок по клиентам с их стоимостью"
     client_tour_stats = ClientProfile.objects.annotate(
         tour_count=Count('tour_packages'),
         total_cost=Sum('tour_packages__price')

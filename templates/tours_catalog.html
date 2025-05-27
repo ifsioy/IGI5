@@ -20,6 +20,14 @@
     </select>
     <label><input type="checkbox" name="is_hot" value="1" {% if filters.is_hot %}checked{% endif %}> Горящие путёвки</label>
     <input type="text" name="service" placeholder="Доп. услуга" value="{{ filters.service }}">
+    <input type="text" name="search" placeholder="Поиск по названию" value="{{ filters.search_query }}">
+    <select name="sort_by">
+        <option value="">Без сортировки</option>
+        <option value="price" {% if filters.sort_by == 'price' %}selected{% endif %}>По цене (возрастание)</option>
+        <option value="-price" {% if filters.sort_by == '-price' %}selected{% endif %}>По цене (убывание)</option>
+        <option value="name" {% if filters.sort_by == 'name' %}selected{% endif %}>По названию</option>
+        <option value="created_at" {% if filters.sort_by == 'created_at' %}selected{% endif %}>По дате создания</option>
+    </select>
     <button type="submit">Фильтровать</button>
 </form>
 
@@ -44,7 +52,12 @@
 <ul>
 {% for hotel in hotels %}
     <li>
-        {{ hotel.name }}, {{ hotel.country.name }}, {{ hotel.stars }}★, Цена в сутки: {{ hotel.price_per_night }}
+        {{ hotel.name }}, {{ hotel.country.name }}, {{ hotel.stars }}★, Цена в сутки: {{ hotel.price_per_night }}<br>
+        {% if hotel.photo %}
+            <img src="{{ hotel.photo.url }}" alt="Фото отеля {{ hotel.name }}" style="max-width: 200px;">
+        {% else %}
+            <span>Фото отсутствует</span>
+        {% endif %}
     </li>
 {% endfor %}
 </ul>

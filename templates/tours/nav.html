@@ -9,8 +9,11 @@
     <a href="{% url 'review-list' %}">Отзывы</a>
     <a href="{% url 'promocode-list' %}">Промокоды</a>
     <a href="{% url 'tours_catalog' %}">Каталог туров</a>
-    <a href="{% url 'weather_external' %}">Погода</a>
-    <a href="{% url 'currency_external' %}">Курсы валют</a>
+    <li>
+        <a href="{% url 'weather_external' %}">Погода</a>
+        <a href="{% url 'currency_external' %}">Курсы валют</a>
+        <a href="/sales-chart/">График продаж</a>
+    </li>
     {% if user.is_superuser %}
         <a href="{% url 'admin_clients_with_tours' %}">Клиенты и путевки</a>
     {% endif %}

@@ -1,11 +1,13 @@
+import logging
 import re
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.conf import settings # To refer to the User model
+from django.conf import settings
 from django.utils import timezone
 
+logger = logging.getLogger('tours')
 
 def validate_phone(value):
     pattern = r'^\+375 \(\d{2}\) \d{3}-\d{2}-\d{2}$'
@@ -24,8 +26,8 @@ class ClientProfile(models.Model):
     address = models.TextField(verbose_name="Адрес")
     phone_number = models.CharField(max_length=20, verbose_name="Номер телефона", validators=[validate_phone])
     birth_date = models.DateField(verbose_name="Дата рождения", validators=[validate_adult])
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")  # Добавлено поле
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")   # Добавлено поле
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     class Meta:
         verbose_name = "Профиль клиента"
@@ -37,6 +39,14 @@ class ClientProfile(models.Model):
         if fn or ln:
             return f"{ln} {fn}".strip()
         return self.user.username or self.user.email or str(self.pk)
+
+    def save(self, *args, **kwargs):
+        try:
+            super().save(*args, **kwargs)
+            logger.info(f'Сохранен профиль клиента: {self} (ID: {self.id})')
+        except Exception as e:
+            logger.error(f'Ошибка при сохранении профиля клиента: {e}', exc_info=True)
+            raise
 
     @property
     def email(self):
@@ -51,8 +61,8 @@ class EmployeeProfile(models.Model):
     work_description = models.TextField(blank=True, verbose_name="Описание выполняемых работ")
     phone_number = models.CharField(max_length=20, verbose_name="Номер телефона", validators=[validate_phone])
     birth_date = models.DateField(verbose_name="Дата рождения", validators=[validate_adult])
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")  # Добавлено поле
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")   # Добавлено поле
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     class Meta:
         verbose_name = "Профиль сотрудника"
@@ -91,7 +101,7 @@ class SeasonClimate(models.Model):
     class Meta:
         verbose_name = "Климат по сезонам"
         verbose_name_plural = "Климаты по сезонам"
-        unique_together = ('country', 'season') # Каждая страна может иметь только одно описание климата на сезон
+        unique_together = ('country', 'season')
 
     def __str__(self):
         return f"{self.country.name} - {self.get_season_display()}"
@@ -147,6 +157,12 @@ class TourPackage(models.Model):
         if self.start_date and not self.end_date and self.duration_weeks:
             self.end_date = self.start_date + timedelta(weeks=self.duration_weeks)
         super().save(*args, **kwargs)
+        try:
+            super().save(*args, **kwargs)
+            logger.info(f'Сохранен тур: {self.name} (ID: {self.id})')
+        except Exception as e:
+            logger.error(f'Ошибка при сохранении тура: {e}', exc_info=True)
+            raise
 
     def __str__(self):
         return f"{self.name} ({self.hotel.name}, {self.get_duration_weeks_display()})"
@@ -163,7 +179,7 @@ class Order(models.Model):
     tour_packages = models.ManyToManyField(TourPackage, related_name='orders', verbose_name="Приобретенные путевки")
     order_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата заказа")
     departure_date = models.DateField(verbose_name="Дата отправления")
-    total_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Общая стоимость") # Может рассчитываться
+    total_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Общая стоимость")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Статус заказа")
 
     class Meta:
@@ -174,7 +190,6 @@ class Order(models.Model):
     def __str__(self):
         return f"Заказ №{self.id} от {self.client.username} ({self.order_date.strftime('%d/%m/%Y')})"
 
-# Модели для контента сайта (Новости, О компании, и т.д.)
 
 class Article(models.Model):
     title = models.CharField(max_length=255, verbose_name="Заголовок")
@@ -182,7 +197,7 @@ class Article(models.Model):
     full_content = models.TextField(verbose_name="Полное содержание")
     image = models.ImageField(upload_to='article_images/', blank=True, null=True, verbose_name="Изображение")
     publication_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата публикации")
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Автор") # Может быть EmployeeProfile
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Автор")
 
     class Meta:
         verbose_name = "Статья (Новость)"
@@ -192,7 +207,7 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
-class FAQ(models.Model): # Словарь терминов и понятий
+class FAQ(models.Model):
     question = models.TextField(verbose_name="Вопрос")
     answer = models.TextField(verbose_name="Ответ")
     added_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
@@ -220,10 +235,7 @@ class Vacancy(models.Model):
 
 class Review(models.Model):
     RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
-    # Если отзывы могут оставлять только зарегистрированные клиенты:
     client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Клиент (автор отзыва)")
-    # Если имя указывается вручную (даже для неавторизованных, но задание намекает на регистрацию):
-    # client_name = models.CharField(max_length=100, verbose_name="Имя клиента")
     rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, verbose_name="Оценка")
     text = models.TextField(verbose_name="Текст отзыва")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата отзыва")
@@ -239,9 +251,9 @@ class Review(models.Model):
 class PromoCode(models.Model):
     code = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
-    discount = models.PositiveSmallIntegerField()  # <= обязательно есть!
+    discount = models.PositiveSmallIntegerField()
     valid_from = models.DateField(default=timezone.now)
-    valid_until = models.DateField(default=timezone.now)               # <= обязательно есть!
+    valid_until = models.DateField(default=timezone.now)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -257,10 +269,8 @@ class PromoCode(models.Model):
     def __str__(self):
         return self.code
 
-# Модели для страницы "О компании"
 class AboutPageContent(models.Model):
     main_text = models.TextField(verbose_name="Основной текст о компании")
-    # Другие общие поля можно добавить сюда
 
     class Meta:
         verbose_name = "Контент страницы 'О компании'"

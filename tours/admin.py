@@ -42,7 +42,6 @@ class CustomUserAdmin(UserAdmin):
             "fields": ("username", "email", "password1", "password2"),
         }),
     )
-    # чтобы email был обязательным и в изменении
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Персональная информация', {'fields': ('first_name', 'last_name', 'email')}),
