@@ -1,0 +1,59 @@
+{% include "tours/nav.html" %}
+
+<h1>Каталог туров и отелей</h1>
+<form method="get">
+    Цена: от <input type="number" name="price_min" value="{{ filters.price_min }}">
+    до <input type="number" name="price_max" value="{{ filters.price_max }}">
+    Страна:
+    <select name="country">
+        <option value="">Любая</option>
+        {% for country in countries %}
+            <option value="{{ country.id }}" {% if filters.country_id == country.id|stringformat:"s" %}selected{% endif %}>{{ country.name }}</option>
+        {% endfor %}
+    </select>
+    Класс отеля:
+    <select name="hotel_class">
+        <option value="">Любой</option>
+        {% for i in "12345" %}
+            <option value="{{ i }}" {% if filters.hotel_class == i %}selected{% endif %}>{{ i }}★</option>
+        {% endfor %}
+    </select>
+    <label><input type="checkbox" name="is_hot" value="1" {% if filters.is_hot %}checked{% endif %}> Горящие путёвки</label>
+    <input type="text" name="service" placeholder="Доп. услуга" value="{{ filters.service }}">
+    <button type="submit">Фильтровать</button>
+</form>
+
+<h2>Путёвки</h2>
+<ul>
+{% for tour in tours %}
+    <li>
+        {{ tour.name }}<br>
+        Страна: {{ tour.hotel.country.name }}<br>
+        Отель: {{ tour.hotel.name }} ({{ tour.hotel.stars }}★)<br>
+        Цена: {{ tour.price }}<br>
+        Даты: {{ tour.start_date }} — {{ tour.end_date }}<br>
+        Горящая: {% if tour.is_hot_deal %}Да{% else %}Нет{% endif %}<br>
+        Доп.услуги: {{ tour.additional_services|default:"—" }}
+    </li>
+{% empty %}
+    <li>Нет подходящих туров.</li>
+{% endfor %}
+</ul>
+
+<h2>Список отелей</h2>
+<ul>
+{% for hotel in hotels %}
+    <li>
+        {{ hotel.name }}, {{ hotel.country.name }}, {{ hotel.stars }}★, Цена в сутки: {{ hotel.price_per_night }}
+    </li>
+{% endfor %}
+</ul>
+
+<h2>Доступные промокоды</h2>
+<ul>
+{% for promo in promo_codes %}
+    <li>{{ promo.code }} — скидка {{ promo.discount }}%, действует до {{ promo.valid_until }}</li>
+{% empty %}
+    <li>Нет активных промокодов.</li>
+{% endfor %}
+</ul>

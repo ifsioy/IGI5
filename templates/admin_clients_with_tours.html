@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Клиенты и их путевки</title>
+</head>
+<body>
+    {% include "tours/nav.html" %}
+    <h1>Список клиентов с путевками</h1>
+    <table border="1">
+        <tr>
+            <th>Имя</th>
+            <th>Email</th>
+            <th>Телефон</th>
+            <th>Путевки</th>
+        </tr>
+        {% for client in clients %}
+        <tr>
+            <td>{{ client.user.get_full_name|default:client.user.username }}</td>
+            <td>{{ client.user.email }}</td>
+            <td>{{ client.phone_number|default:"—" }}</td>
+            <td>
+                <ul>
+                {% for tour in client.tour_packages.all %}
+                    <li>
+                        {% if tour.start_date and tour.end_date %}
+                        {{ tour.start_date }} — {{ tour.end_date }}
+                        {% else %}
+                            (нет дат)
+                        {% endif %}
+                        Стоимость: {{ tour.price }}<br>
+                        Страна: {{ tour.hotel.country.name }}
+                    </li>
+                {% empty %}
+                    Нет путевок
+                {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Список отелей по странам</h2>
+    <table border="1">
+        <tr>
+            <th>Отель</th>
+            <th>Страна</th>
+            <th>Климат по сезонам</th>
+            <th>Звёзды</th>
+            <th>Стоимость в сутки</th>
+        </tr>
+        {% for hotel in hotels %}
+        <tr>
+            <td>{{ hotel.name }}</td>
+            <td>{{ hotel.country.name }}</td>
+            <td>
+                <ul>
+                {% for climate in hotel.country.climates.all %}
+                    <li>{{ climate.get_season_display }}: {{ climate.climate_description }}</li>
+                {% endfor %}
+                </ul>
+            </td>
+            <td>{{ hotel.stars }}</td>
+            <td>{{ hotel.price_per_night }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Количество путёвок по клиентам</h2>
+    <table border="1">
+        <tr>
+            <th>Клиент</th>
+            <th>Количество путёвок</th>
+            <th>Общая стоимость</th>
+        </tr>
+        {% for stat in client_tour_stats %}
+        <tr>
+            <td>{{ stat }}</td>
+            <td>{{ stat.tour_count }}</td>
+            <td>{{ stat.total_cost|default:"0" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

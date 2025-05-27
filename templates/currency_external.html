@@ -1,0 +1,12 @@
+{% include "tours/nav.html" %}
+<h1>Курсы валют (относительно рубля)</h1>
+{% if error %}
+    <p style="color:red;">Ошибка: {{ error }}</p>
+{% else %}
+    <ul>
+        <li>USD: {{ rates.USD }}</li>
+        <li>EUR: {{ rates.EUR }}</li>
+        <li>TRY: {{ rates.TRY }}</li>
+        <li>THB: {{ rates.THB }}</li>
+    </ul>
+{% endif %}

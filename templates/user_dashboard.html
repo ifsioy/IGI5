@@ -1,0 +1,51 @@
+{% include "tours/nav.html" %}
+<h1>Личный кабинет</h1>
+
+{% if profile_type == 'client' %}
+    <h2>Ваши данные:</h2>
+    <ul>
+        <li>Имя: {{ profile.user.get_full_name|default:profile.user.username }}</li>
+        <li>Email: {{ profile.email }}</li>
+        <li>Телефон: {{ profile.phone_number }}</li>
+        <li>Адрес: {{ profile.address }}</li>
+        <li>Дата рождения: {{ profile.birth_date }}</li>
+    </ul>
+    <h2>Ваши покупки:</h2>
+    <ul>
+    {% for tour in tours %}
+        <li>{{ tour.name }} ({{ tour.start_date }} — {{ tour.end_date }}), отель: {{ tour.hotel.name }}, стоимость: {{ tour.price }}</li>
+    {% empty %}
+        <li>Путёвок нет.</li>
+    {% endfor %}
+    </ul>
+    <h2>Доступные промокоды:</h2>
+    <ul>
+    {% for promo in promo_codes %}
+        <li>{{ promo.code }} — скидка {{ promo.discount }}%, до {{ promo.valid_until }}</li>
+    {% empty %}
+        <li>Нет доступных промокодов.</li>
+    {% endfor %}
+    </ul>
+{% elif profile_type == 'employee' %}
+    <h2>Профиль сотрудника</h2>
+    <ul>
+        <li>Имя: {{ profile.user.get_full_name|default:profile.user.username }}</li>
+        <li>Email: {{ profile.email }}</li>
+        <li>Телефон: {{ profile.phone_number }}</li>
+        <li>Должность: {{ profile.position }}</li>
+    </ul>
+    <h2>Клиенты:</h2>
+    <ul>
+    {% for client in clients %}
+        <li>{{ client }} ({{ client.email }}, {{ client.phone_number }})</li>
+    {% endfor %}
+    </ul>
+    <h2>Продажи путёвок:</h2>
+    <ul>
+    {% for sale in sales %}
+        <li>{{ sale }} — клиент: {{ sale.client }}, стоимость: {{ sale.price }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Профиль не определён.</p>
+{% endif %}

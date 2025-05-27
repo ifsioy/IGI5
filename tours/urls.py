@@ -3,6 +3,16 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('weather/', views.weather_page, name='weather_external'),
+    path('currency/', views.currency_page, name='currency_external'),
+    path('catalog/', views.tours_catalog, name='tours_catalog'),
+    path('dashboard/', views.user_dashboard, name='user_dashboard'),
+    path('client/', views.client_dashboard, name='client_dashboard'),
+    path('employee/', views.employee_dashboard, name='employee_dashboard'),
+    path('clients-tours/', views.admin_clients_with_tours, name='admin_clients_with_tours'),
+    path('register/', views.register, name='register'),
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('news/', views.news_list, name='news-list'),

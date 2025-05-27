@@ -1,14 +1,201 @@
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.decorators import user_passes_test, login_required
 
 from .models import Country, ClientProfile, EmployeeProfile, SeasonClimate, Hotel, TourPackage, Order, Article, FAQ, \
     Vacancy, Review, PromoCode, AboutPageContent, CompanyVideo, CompanyLogo, CompanyHistoryItem, CompanyRequisite
 
+import requests
+from django.conf import settings
+from django.shortcuts import render
 
+def currency_page(request):
+    url = 'https://open.er-api.com/v6/latest/RUB'
+    rates = {}
+    error = None
+    try:
+        resp = requests.get(url, timeout=5)
+        if resp.status_code != 200:
+            error = f"Ошибка соединения: {resp.status_code}"
+        else:
+            data = resp.json()
+            if data.get('result') == 'success':
+                rates = data.get('rates', {})
+            else:
+                error = data.get('error-type', 'Ошибка ответа от API')
+    except Exception as e:
+        error = str(e)
+    return render(request, 'currency_external.html', {'rates': rates, 'error': error})
+
+def weather_page(request):
+    cities = ['Moscow', 'Istanbul', 'Bangkok']
+    weather_data = []
+    for city in cities:
+        url = f'https://wttr.in/{city}?format=j1'
+        try:
+            resp = requests.get(url, timeout=5)
+            data = resp.json()
+            current = data['current_condition'][0]
+            weather_data.append({
+                'city': city,
+                'temp': current['temp_C'],
+                'desc': current['weatherDesc'][0]['value'],
+                'icon': None  # У wttr.in нет иконок, можно добавить через weatherDesc
+            })
+        except Exception as e:
+            weather_data.append({
+                'city': city,
+                'temp': None,
+                'desc': f"Ошибка: {e}",
+                'icon': None,
+            })
+    return render(request, 'weather_external.html', {'weather_data': weather_data, 'global_error': None})
+
+
+def tours_catalog(request):
+    # фильтры из GET-запроса
+    price_min = request.GET.get('price_min')
+    price_max = request.GET.get('price_max')
+    country_id = request.GET.get('country')
+    hotel_class = request.GET.get('hotel_class')
+    is_hot = request.GET.get('is_hot')
+    service = request.GET.get('service')
+
+    tours = TourPackage.objects.select_related('hotel', 'hotel__country').all()
+
+    if price_min:
+        tours = tours.filter(price__gte=price_min)
+    if price_max:
+        tours = tours.filter(price__lte=price_max)
+    if country_id:
+        tours = tours.filter(hotel__country__id=country_id)
+    if hotel_class:
+        tours = tours.filter(hotel__stars=hotel_class)
+    if is_hot:
+        tours = tours.filter(is_hot_deal=True)
+    if service:
+        tours = tours.filter(additional_services__icontains=service)
+
+    hotels = Hotel.objects.select_related('country').all()
+    countries = Country.objects.all()
+    promo_codes = [p for p in PromoCode.objects.all() if p.is_currently_active]
+    # Купоны — если есть отдельная модель, тоже добавь
+
+    return render(request, 'tours_catalog.html', {
+        'tours': tours,
+        'hotels': hotels,
+        'countries': countries,
+        'promo_codes': promo_codes,
+        'filters': {
+            'price_min': price_min,
+            'price_max': price_max,
+            'country_id': country_id,
+            'hotel_class': hotel_class,
+            'is_hot': is_hot,
+            'service': service,
+        }
+    })
+
+@login_required
+def user_dashboard(request):
+    user = request.user
+    now = timezone.now().date()
+
+    # Определяем тип профиля
+    client_profile = getattr(user, 'clientprofile', None)
+    employee_profile = getattr(user, 'employeeprofile', None)
+
+    context = {'user': user}
+
+    if client_profile:
+        tours = client_profile.tour_packages.select_related('hotel')
+        promo_codes = PromoCode.objects.filter(is_active=True, valid_from__lte=now, valid_until__gte=now)
+        context.update({
+            'profile_type': 'client',
+            'profile': client_profile,
+            'tours': tours,
+            'promo_codes': promo_codes,
+        })
+    elif employee_profile:
+        # Можно ограничить клиентов, с которыми работает сотрудник, если есть такая связь
+        clients = ClientProfile.objects.prefetch_related('tour_packages')
+        sales = TourPackage.objects.select_related('client', 'hotel')
+        context.update({
+            'profile_type': 'employee',
+            'profile': employee_profile,
+            'clients': clients,
+            'sales': sales,
+        })
+    else:
+        context['profile_type'] = 'unknown'
+
+    return render(request, 'user_dashboard.html', context)
+
+@login_required
+def client_dashboard(request):
+    # Проверка: у пользователя есть профиль клиента
+    client = get_object_or_404(ClientProfile, user=request.user)
+    tours = TourPackage.objects.filter(client=client)
+    now = timezone.now().date()
+    promo_codes = PromoCode.objects.filter(is_active=True, valid_from__lte=now, valid_until__gte=now)
+    return render(request, 'client_dashboard.html', {
+        'client': client,
+        'tours': tours,
+        'promo_codes': promo_codes,
+    })
+
+@login_required
+def employee_dashboard(request):
+    # Проверка: у пользователя есть профиль сотрудника
+    employee = get_object_or_404(EmployeeProfile, user=request.user)
+    # Все клиенты и их путёвки (или фильтруй только «своих» клиентов, если есть связь)
+    clients = ClientProfile.objects.prefetch_related('tour_packages')
+    sales = TourPackage.objects.select_related('client', 'hotel')
+    return render(request, 'employee_dashboard.html', {
+        'employee': employee,
+        'clients': clients,
+        'sales': sales,
+    })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_clients_with_tours(request):
+    from django.db.models import Sum, Count, Prefetch
+
+    # Получаем клиентов и их путёвки
+    clients = ClientProfile.objects.prefetch_related('tour_packages__hotel__country')
+    client_tour_stats = ClientProfile.objects.annotate(
+        tour_count=Count('tour_packages'),
+        total_cost=Sum('tour_packages__price')
+    )
+    # Получаем все отели с их странами и климатом
+    hotels = Hotel.objects.select_related('country')
+
+    # Для таблицы "Количество путевок по клиентам с их стоимостью"
+    client_tour_stats = ClientProfile.objects.annotate(
+        tour_count=Count('tour_packages'),
+        total_cost=Sum('tour_packages__price')
+    )
+
+    return render(request, 'admin_clients_with_tours.html', {
+        'clients': clients,
+        'hotels': hotels,
+        'client_tour_stats': client_tour_stats,
+    })
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
 
 def home(request):
     last_article = Article.objects.order_by('-publication_date').first()

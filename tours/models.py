@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -29,7 +30,11 @@ class ClientProfile(models.Model):
         verbose_name_plural = "Профили клиентов"
 
     def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
+        fn = self.user.first_name
+        ln = self.user.last_name
+        if fn or ln:
+            return f"{ln} {fn}".strip()
+        return self.user.username or self.user.email or str(self.pk)
 
     @property
     def email(self):
@@ -118,11 +123,25 @@ class TourPackage(models.Model):
     additional_services = models.TextField(blank=True, verbose_name="Дополнительные услуги")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    start_date = models.DateField(verbose_name="Дата начала тура", null=True, blank=True)
+    end_date = models.DateField(verbose_name="Дата окончания тура", null=True, blank=True)
+
+    client = models.ForeignKey(
+        'ClientProfile',
+        on_delete=models.CASCADE,
+        related_name='tour_packages',
+        verbose_name="Клиент"
+    )
 
     class Meta:
         verbose_name = "Путевка"
         verbose_name_plural = "Путевки"
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if self.start_date and not self.end_date and self.duration_weeks:
+            self.end_date = self.start_date + timedelta(weeks=self.duration_weeks)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.hotel.name}, {self.get_duration_weeks_display()})"
@@ -224,6 +243,11 @@ class PromoCode(models.Model):
         verbose_name = "Промокод"
         verbose_name_plural = "Промокоды"
         ordering = ['-valid_until']
+
+    @property
+    def is_currently_active(self):
+        today = timezone.now().date()
+        return self.is_active and self.valid_from <= today <= self.valid_until
 
     def __str__(self):
         return self.code

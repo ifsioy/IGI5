@@ -1,0 +1,14 @@
+<h1>Добро пожаловать, {{ employee }}!</h1>
+<h2>Клиенты:</h2>
+<ul>
+    {% for client in clients %}
+        <li>{{ client }} ({{ client.email }}, {{ client.phone_number }})</li>
+    {% endfor %}
+</ul>
+
+<h2>Продажи путёвок:</h2>
+<ul>
+    {% for sale in sales %}
+        <li>{{ sale }} — клиент: {{ sale.client }}, стоимость: {{ sale.price }}</li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,18 @@
+<h1>Добро пожаловать, {{ client }}!</h1>
+<h2>Ваши покупки:</h2>
+<ul>
+    {% for tour in tours %}
+        <li>{{ tour }} (от {{ tour.start_date }} до {{ tour.end_date }}, стоимость: {{ tour.price }})</li>
+    {% empty %}
+        <li>Нет купленных путёвок.</li>
+    {% endfor %}
+</ul>
+
+<h2>Доступные промокоды:</h2>
+<ul>
+    {% for promo in promo_codes %}
+        <li>{{ promo.code }} — скидка {{ promo.discount }}%, действует до {{ promo.valid_until }} ({{ promo.description }})</li>
+    {% empty %}
+        <li>Нет доступных промокодов.</li>
+    {% endfor %}
+</ul>

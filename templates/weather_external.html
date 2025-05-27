@@ -1,0 +1,13 @@
+{% include "tours/nav.html" %}
+<h1>Погода по популярным направлениям</h1>
+<ul>
+{% for w in weather_data %}
+    <li>
+        <b>{{ w.city }}</b>:
+        {% if w.temp %}{{ w.temp }}°C, {{ w.desc }}{% else %}{{ w.desc|default:"Нет данных" }}{% endif %}
+        {% if w.icon %}
+            <img src="https://openweathermap.org/img/wn/{{ w.icon }}@2x.png" alt="icon"/>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
