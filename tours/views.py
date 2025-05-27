@@ -1,3 +1,8 @@
+import calendar
+from datetime import datetime
+from statistics import median, mode
+
+import pytz
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -5,6 +10,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import user_passes_test, login_required
+from django.db.models import Avg, Count, F, Sum
 
 from .models import Country, ClientProfile, EmployeeProfile, SeasonClimate, Hotel, TourPackage, Order, Article, FAQ, \
     Vacancy, Review, PromoCode, AboutPageContent, CompanyVideo, CompanyLogo, CompanyHistoryItem, CompanyRequisite
@@ -100,20 +106,92 @@ def tours_catalog(request):
         }
     })
 
+from datetime import datetime
+import pytz
+import calendar
+from django.db.models import Avg, Count, Sum
+from django.shortcuts import render
+from django.utils.timezone import now
+from statistics import median, mode
+from .models import ClientProfile, EmployeeProfile, TourPackage, PromoCode
+
 @login_required
 def user_dashboard(request):
     user = request.user
-    now = timezone.now().date()
+    now_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    user_timezone = getattr(user, 'timezone', 'Europe/Moscow')  # Тайм-зона пользователя, можно заменить на поле модели
+    local_now = now_utc.astimezone(pytz.timezone(user_timezone))
 
-    # Определяем тип профиля
+    # Текущий текстовый календарь
+    current_month_calendar = calendar.TextCalendar().formatmonth(local_now.year, local_now.month)
+
+    # Даты добавления/изменения данных для текущего пользователя
     client_profile = getattr(user, 'clientprofile', None)
     employee_profile = getattr(user, 'employeeprofile', None)
 
-    context = {'user': user}
+    if client_profile:
+        recent_tours = TourPackage.objects.filter(client=client_profile).order_by('-created_at')[:5]
+    elif employee_profile:
+        recent_tours = TourPackage.objects.filter(client__user=user).order_by('-created_at')[:5]
+    else:
+        recent_tours = []
 
+    # Статистика по продажам (общая)
+    sales_data = TourPackage.objects.aggregate(
+        avg_sale=Avg('price'),
+        total_sales=Sum('price')
+    )
+    all_sales_prices = list(TourPackage.objects.values_list('price', flat=True))
+    sales_median = median(all_sales_prices) if all_sales_prices else None
+    sales_mode = mode(all_sales_prices) if all_sales_prices else None
+
+    # Возраст клиентов (общая статистика)
+    current_year = timezone.now().year
+    client_ages = [
+        current_year - client.birth_date.year
+        for client in ClientProfile.objects.exclude(birth_date__isnull=True)
+    ]
+    age_median = median(client_ages) if client_ages else None
+    age_avg = sum(client_ages) / len(client_ages) if client_ages else None
+
+    # Популярность и прибыльность товаров (общая статистика)
+    popular_packages = (
+        TourPackage.objects.values('name')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+        .first()
+    )
+    profitable_packages = (
+        TourPackage.objects.values('name')
+        .annotate(total_profit=Sum('price'))
+        .order_by('-total_profit')
+        .first()
+    )
+
+    # Общий контекст
+    context = {
+        'user': user,
+        'current_time_utc': now_utc.strftime('%d/%m/%Y %H:%M:%S'),
+        'current_time_local': local_now.strftime('%d/%m/%Y %H:%M:%S'),
+        'user_timezone': user_timezone,
+        'calendar': current_month_calendar,
+        'recent_tours': recent_tours,
+        'stats': {
+            'avg_sale': sales_data['avg_sale'],
+            'total_sales': sales_data['total_sales'],
+            'sales_median': sales_median,
+            'sales_mode': sales_mode,
+            'age_median': age_median,
+            'age_avg': age_avg,
+            'popular_package': popular_packages,
+            'profitable_package': profitable_packages,
+        },
+    }
+
+    # Добавляем данные профиля
     if client_profile:
         tours = client_profile.tour_packages.select_related('hotel')
-        promo_codes = PromoCode.objects.filter(is_active=True, valid_from__lte=now, valid_until__gte=now)
+        promo_codes = PromoCode.objects.filter(is_active=True, valid_from__lte=now_utc, valid_until__gte=now_utc)
         context.update({
             'profile_type': 'client',
             'profile': client_profile,
@@ -121,9 +199,8 @@ def user_dashboard(request):
             'promo_codes': promo_codes,
         })
     elif employee_profile:
-        # Можно ограничить клиентов, с которыми работает сотрудник, если есть такая связь
-        clients = ClientProfile.objects.prefetch_related('tour_packages')
-        sales = TourPackage.objects.select_related('client', 'hotel')
+        clients = ClientProfile.objects.prefetch_related('tour_packages').filter(user=user)
+        sales = TourPackage.objects.filter(client__user=user).select_related('hotel')
         context.update({
             'profile_type': 'employee',
             'profile': employee_profile,

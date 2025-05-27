@@ -1,6 +1,40 @@
 {% include "tours/nav.html" %}
 <h1>Личный кабинет</h1>
 
+<h2>Информация о времени:</h2>
+<p>Текущая дата и время (UTC): {{ current_time_utc }}</p>
+<p>Текущая дата и время ({{ user_timezone }}): {{ current_time_local }}</p>
+
+<h2>Календарь текущего месяца:</h2>
+<pre>
+{{ calendar }}
+</pre>
+
+<h2>Общая статистика сайта:</h2>
+<ul>
+    <li>Средняя стоимость продаж: {{ stats.avg_sale }}</li>
+    <li>Общая сумма продаж: {{ stats.total_sales }}</li>
+    <li>Медианная стоимость продаж: {{ stats.sales_median }}</li>
+    <li>Мода стоимости продаж: {{ stats.sales_mode }}</li>
+    <li>Средний возраст клиентов: {{ stats.age_avg }}</li>
+    <li>Медианный возраст клиентов: {{ stats.age_median }}</li>
+    <li>Самый популярный тур: {{ stats.popular_package.name }}</li>
+    <li>Самый прибыльный тур: {{ stats.profitable_package.name }}</li>
+</ul>
+
+<h2>Недавно добавленные/изменённые данные:</h2>
+<h3>Путёвки:</h3>
+<ul>
+    {% for tour in recent_tours %}
+    <li>
+        {{ tour.name }} — Добавлено: {{ tour.created_at|date:"d/m/Y H:i:s" }} (UTC),
+        Изменено: {{ tour.updated_at|date:"d/m/Y H:i:s" }} (UTC)
+    </li>
+    {% empty %}
+    <li>Данных нет.</li>
+    {% endfor %}
+</ul>
+
 {% if profile_type == 'client' %}
     <h2>Ваши данные:</h2>
     <ul>
@@ -10,6 +44,7 @@
         <li>Адрес: {{ profile.address }}</li>
         <li>Дата рождения: {{ profile.birth_date }}</li>
     </ul>
+
     <h2>Ваши покупки:</h2>
     <ul>
     {% for tour in tours %}
@@ -18,34 +53,41 @@
         <li>Путёвок нет.</li>
     {% endfor %}
     </ul>
+
     <h2>Доступные промокоды:</h2>
     <ul>
     {% for promo in promo_codes %}
-        <li>{{ promo.code }} — скидка {{ promo.discount }}%, до {{ promo.valid_until }}</li>
+        <li>{{ promo.code }} — скидка {{ promo.discount }}%, действует до {{ promo.valid_until }} ({{ promo.description }})</li>
     {% empty %}
         <li>Нет доступных промокодов.</li>
     {% endfor %}
     </ul>
 {% elif profile_type == 'employee' %}
-    <h2>Профиль сотрудника</h2>
+    <h2>Ваши данные:</h2>
     <ul>
         <li>Имя: {{ profile.user.get_full_name|default:profile.user.username }}</li>
         <li>Email: {{ profile.email }}</li>
         <li>Телефон: {{ profile.phone_number }}</li>
         <li>Должность: {{ profile.position }}</li>
     </ul>
+
     <h2>Клиенты:</h2>
     <ul>
     {% for client in clients %}
-        <li>{{ client }} ({{ client.email }}, {{ client.phone_number }})</li>
+        <li>{{ client.user.get_full_name|default:client.user.username }} ({{ client.phone_number }})</li>
+    {% empty %}
+        <li>Клиентов нет.</li>
     {% endfor %}
     </ul>
-    <h2>Продажи путёвок:</h2>
+
+    <h2>Продажи:</h2>
     <ul>
     {% for sale in sales %}
-        <li>{{ sale }} — клиент: {{ sale.client }}, стоимость: {{ sale.price }}</li>
+        <li>{{ sale.name }} — клиент: {{ sale.client.user.get_full_name|default:sale.client.user.username }}, стоимость: {{ sale.price }}</li>
+    {% empty %}
+        <li>Продаж нет.</li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>Профиль не определён.</p>
+    <p>Тип профиля не определён.</p>
 {% endif %}

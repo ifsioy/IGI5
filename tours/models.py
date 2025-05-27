@@ -24,6 +24,8 @@ class ClientProfile(models.Model):
     address = models.TextField(verbose_name="Адрес")
     phone_number = models.CharField(max_length=20, verbose_name="Номер телефона", validators=[validate_phone])
     birth_date = models.DateField(verbose_name="Дата рождения", validators=[validate_adult])
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")  # Добавлено поле
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")   # Добавлено поле
 
     class Meta:
         verbose_name = "Профиль клиента"
@@ -40,6 +42,7 @@ class ClientProfile(models.Model):
     def email(self):
         return self.user.email
 
+
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь (сотрудник)")
     patronymic = models.CharField(max_length=100, blank=True, verbose_name="Отчество")
@@ -48,6 +51,8 @@ class EmployeeProfile(models.Model):
     work_description = models.TextField(blank=True, verbose_name="Описание выполняемых работ")
     phone_number = models.CharField(max_length=20, verbose_name="Номер телефона", validators=[validate_phone])
     birth_date = models.DateField(verbose_name="Дата рождения", validators=[validate_adult])
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")  # Добавлено поле
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")   # Добавлено поле
 
     class Meta:
         verbose_name = "Профиль сотрудника"
