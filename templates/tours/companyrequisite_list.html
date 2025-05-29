@@ -5,7 +5,7 @@
 
 {% if companyrequisite_list %}
     <ul>
-        {% for requisite in companyrequisite_list %}  {# Используйте companyrequisite_list здесь #}
+        {% for requisite in companyrequisite_list %}
             <li>
                 {{ requisite.name }}: {{ requisite.value }}
                 <a href="{% url 'companyrequisite-detail' requisite.pk %}">Просмотр</a>

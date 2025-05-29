@@ -18,14 +18,14 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('', views.home, name='home'),
-    path('about/', views.about, name='about'), # Potential conflict with AboutPageContentListView
+    path('about/', views.about, name='about'),
     path('news/', views.news_list, name='news-list'),
-    path('faq/', views.faq_list, name='faq-list'), # Potential duplicate name
+    path('faq/', views.faq_list, name='faq-list'),
     path('contacts/', views.contacts, name='contacts'),
     path('privacy/', views.privacy_policy, name='privacy-policy'),
-    path('vacancies/', views.vacancy_list, name='vacancy-list'), # Potential duplicate name
-    path('reviews/', views.review_list, name='review-list'), # Potential duplicate name
-    path('promocodes/', views.promocode_list, name='promocode-list'), # Potential duplicate name
+    path('vacancies/', views.vacancy_list, name='vacancy-list'),
+    path('reviews/', views.review_list, name='review-list'),
+    path('promocodes/', views.promocode_list, name='promocode-list'),
     path('countries/', views.CountryListView.as_view(), name='country-list'),
     path('countries/create/', views.CountryCreateView.as_view(), name='country-create'),
     path('countries/<int:pk>/', views.CountryDetailView.as_view(), name='country-detail'),
@@ -66,28 +66,28 @@ urlpatterns = [
     path('articles/<int:pk>/', views.ArticleDetailView.as_view(), name='article-detail'),
     path('articles/<int:pk>/update/', views.ArticleUpdateView.as_view(), name='article-update'),
     path('articles/<int:pk>/delete/', views.ArticleDeleteView.as_view(), name='article-delete'),
-    path('faqs/', views.FAQListView.as_view(), name='faq-list'), # Note: 'faq-list' name is used twice
+    path('faqs/', views.FAQListView.as_view(), name='faq-list'),
     path('faqs/create/', views.FAQCreateView.as_view(), name='faq-create'),
     path('faqs/<int:pk>/', views.FAQDetailView.as_view(), name='faq-detail'),
     path('faqs/<int:pk>/update/', views.FAQUpdateView.as_view(), name='faq-update'),
     path('faqs/<int:pk>/delete/', views.FAQDeleteView.as_view(), name='faq-delete'),
-    path('vacancies/', views.VacancyListView.as_view(), name='vacancy-list'), # Note: 'vacancy-list' name is used twice
+    path('vacancies/', views.VacancyListView.as_view(), name='vacancy-list'),
     path('vacancies/create/', views.VacancyCreateView.as_view(), name='vacancy-create'),
     path('vacancies/<int:pk>/', views.VacancyDetailView.as_view(), name='vacancy-detail'),
     path('vacancies/<int:pk>/update/', views.VacancyUpdateView.as_view(), name='vacancy-update'),
     path('vacancies/<int:pk>/delete/', views.VacancyDeleteView.as_view(), name='vacancy-delete'),
-    path('reviews/', views.ReviewListView.as_view(), name='review-list'), # Note: 'review-list' name is used twice
+    path('reviews/', views.ReviewListView.as_view(), name='review-list'),
     path('reviews/create/', views.ReviewCreateView.as_view(), name='review-create'),
     path('reviews/<int:pk>/', views.ReviewDetailView.as_view(), name='review-detail'),
     path('reviews/<int:pk>/update/', views.ReviewUpdateView.as_view(), name='review-update'),
     path('reviews/<int:pk>/delete/', views.ReviewDeleteView.as_view(), name='review-delete'),
-    path('promocodes/', views.PromoCodeListView.as_view(), name='promocode-list'), # Note: 'promocode-list' name is used twice
+    path('promocodes/', views.PromoCodeListView.as_view(), name='promocode-list'),
     path('promocodes/create/', views.PromoCodeCreateView.as_view(), name='promocode-create'),
     path('promocodes/<int:pk>/', views.PromoCodeDetailView.as_view(), name='promocode-detail'),
     path('promocodes/<int:pk>/update/', views.PromoCodeUpdateView.as_view(), name='promocode-update'),
     path('promocodes/<int:pk>/delete/', views.PromoCodeDeleteView.as_view(), name='promocode-delete'),
-    # Consider renaming 'about/' path for AboutPageContent to avoid conflict with the simple 'about' view
-    path('about-content/', views.AboutPageContentListView.as_view(), name='aboutpagecontent-list'), # Changed path
+
+    path('about-content/', views.AboutPageContentListView.as_view(), name='aboutpagecontent-list'),
     path('about-content/create/', views.AboutPageContentCreateView.as_view(), name='aboutpagecontent-create'),
     path('about-content/<int:pk>/', views.AboutPageContentDetailView.as_view(), name='aboutpagecontent-detail'),
     path('about-content/<int:pk>/update/', views.AboutPageContentUpdateView.as_view(), name='aboutpagecontent-update'),
@@ -102,13 +102,12 @@ urlpatterns = [
     path('company-logos/<int:pk>/', views.CompanyLogoDetailView.as_view(), name='companylogo-detail'),
     path('company-logos/<int:pk>/update/', views.CompanyLogoUpdateView.as_view(), name='companylogo-update'),
     path('company-logos/<int:pk>/delete/', views.CompanyLogoDeleteView.as_view(), name='companylogo-delete'),
-    path('company-history/', views.CompanyHistoryItemListView.as_view(), name='companyhistoryitem-list'),
-    path('company-history/create/', views.CompanyHistoryItemCreateView.as_view(), name='companyhistoryitem-create'),
-    path('company-history/<int:pk>/', views.CompanyHistoryItemDetailView.as_view(), name='companyhistoryitem-detail'),
-    path('company-history/<int:pk>/update/', views.CompanyHistoryItemUpdateView.as_view(),
-         name='companyhistoryitem-update'),
-    path('company-history/<int:pk>/delete/', views.CompanyHistoryItemDeleteView.as_view(),
-         name='companyhistoryitem-delete'),
+    path('history/', views.company_history_item_list, name='companyhistoryitem-list'),
+    path('history/new/', views.company_history_item_create, name='companyhistoryitem-create'),
+    path('history/<int:pk>/', views.company_history_item_detail, name='companyhistoryitem-detail'),
+    path('history/<int:pk>/edit/', views.company_history_item_update, name='companyhistoryitem-update'),
+    path('history/<int:pk>/delete/', views.company_history_item_delete, name='companyhistoryitem-delete'),
+
     path('company-requisites/', views.CompanyRequisiteListView.as_view(), name='companyrequisite-list'),
     path('company-requisites/create/', views.CompanyRequisiteCreateView.as_view(), name='companyrequisite-create'),
     path('company-requisites/<int:pk>/', views.CompanyRequisiteDetailView.as_view(), name='companyrequisite-detail'),

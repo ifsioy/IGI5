@@ -5,6 +5,12 @@
 </head>
 <body>
     {% include "tours/nav.html" %}
+    {% if user.is_authenticated %}
+        <h1></h1>
+        <a href="{% url 'review-create' %}">
+        Оставить отзыв
+        </a>
+    {% endif %}
     <h1>Отзывы</h1>
     {% for review in reviews %}
         <div style="border:1px solid #ccc; margin:10px 0; padding:10px;">

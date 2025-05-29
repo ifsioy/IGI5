@@ -1,5 +1,5 @@
 <h1>Удалить событие</h1>
-<p>Вы уверены, что хотите удалить событие "{{ object.title }}"?</p>
+<p>Вы уверены, что хотите удалить событие "{{ object.year }}: {{ object.event_description|truncatewords:10 }}"?</p>
 <form method="post">
   {% csrf_token %}
   <button type="submit">Удалить</button>

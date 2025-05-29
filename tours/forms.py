@@ -1,5 +1,5 @@
 from django import forms
-from .models import ClientProfile
+from .models import ClientProfile, CompanyHistoryItem
 from django.core.exceptions import ValidationError
 
 class ClientProfileForm(forms.ModelForm):
@@ -21,3 +21,11 @@ class ClientProfileForm(forms.ModelForm):
         if age < 18:
             raise ValidationError('Возраст должен быть не менее 18 лет.')
         return birth_date
+
+class CompanyHistoryItemForm(forms.ModelForm):
+    class Meta:
+        model = CompanyHistoryItem
+        fields = ['year', 'event_description']
+        widgets = {
+            'event_description': forms.Textarea(attrs={'rows': 3}),
+        }

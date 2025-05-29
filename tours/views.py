@@ -6,14 +6,16 @@ from statistics import median, mode
 import pytz
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.db.models import Avg, Count, F, Sum
 
+from .forms import CompanyHistoryItemForm
 from .models import Country, ClientProfile, EmployeeProfile, SeasonClimate, Hotel, TourPackage, Order, Article, FAQ, \
     Vacancy, Review, PromoCode, AboutPageContent, CompanyVideo, CompanyLogo, CompanyHistoryItem, CompanyRequisite
 
@@ -629,22 +631,35 @@ class ReviewDetailView(DetailView):
     template_name = 'tours/review_detail.html'
     context_object_name = 'review'
 
-class ReviewCreateView(CreateView):
+class ReviewCreateView(LoginRequiredMixin, CreateView):
     model = Review
-    fields = ['author', 'tour_package', 'rating', 'text', 'created_at']
+    fields = ['rating', 'text']
     template_name = 'tours/review_form.html'
     success_url = reverse_lazy('review-list')
 
-class ReviewUpdateView(UpdateView):
+    def form_valid(self, form):
+        form.instance.client = self.request.user
+        return super().form_valid(form)
+
+class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Review
-    fields = ['author', 'tour_package', 'rating', 'text', 'created_at']
+    fields = ['rating', 'text']
     template_name = 'tours/review_form.html'
     success_url = reverse_lazy('review-list')
 
-class ReviewDeleteView(DeleteView):
+    def test_func(self):
+        review = self.get_object()
+        return self.request.user == review.client
+
+class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Review
     template_name = 'tours/review_confirm_delete.html'
     success_url = reverse_lazy('review-list')
+
+    def test_func(self):
+        review = self.get_object()
+        return self.request.user == review.client
+
 
 class PromoCodeListView(ListView):
     model = PromoCode
@@ -754,41 +769,74 @@ class CompanyLogoDeleteView(DeleteView):
     template_name = 'tours/companylogo_confirm_delete.html'
     success_url = reverse_lazy('companylogo-list')
 
-
 class CompanyHistoryItemListView(ListView):
     model = CompanyHistoryItem
     template_name = 'tours/companyhistoryitem_list.html'
-    context_object_name = 'history_items'  # Or your preferred name like 'object_list'
+    context_object_name = 'history_items'
 
 
 class CompanyHistoryItemDetailView(DetailView):
     model = CompanyHistoryItem
     template_name = 'tours/companyhistoryitem_detail.html'
-    context_object_name = 'object'  # Default is 'object', can be 'history_item' if you prefer
+    context_object_name = 'object'
 
 
 class CompanyHistoryItemCreateView(CreateView):
     model = CompanyHistoryItem
-    fields = ['year', 'event_description']  # Corrected fields
+    fields = ['year', 'event_description']
     template_name = 'tours/companyhistoryitem_form.html'
-    success_url = reverse_lazy('companyhistoryitem-list')  # Added namespace
+    success_url = reverse_lazy('companyhistoryitem-list')
 
 
 class CompanyHistoryItemUpdateView(UpdateView):
     model = CompanyHistoryItem
-    fields = ['year', 'event_description']  # Corrected fields
+    fields = ['year', 'event_description']
     template_name = 'tours/companyhistoryitem_form.html'
 
-    # success_url = reverse_lazy('tours:companyhistoryitem-list') # Original
 
-    def get_success_url(self):  # More typical for UpdateView
+    def get_success_url(self):
         return reverse_lazy('companyhistoryitem-detail', kwargs={'pk': self.object.pk})
 
-
-class CompanyHistoryItemDeleteView(DeleteView):  # Ensure this view exists if used by templates
+class CompanyHistoryItemDeleteView(DeleteView):
     model = CompanyHistoryItem
-    template_name = 'tours/companyhistoryitem_confirm_delete.html'  # Standard template name
+    template_name = 'tours/companyhistoryitem_confirm_delete.html'
     success_url = reverse_lazy('companyhistoryitem-list')
+
+def company_history_item_list(request):
+    history_items = CompanyHistoryItem.objects.all()
+    return render(request, 'tours/companyhistoryitem_list.html', {'object_list': history_items})
+
+def company_history_item_detail(request, pk):
+    history_item = get_object_or_404(CompanyHistoryItem, pk=pk)
+    return render(request, 'tours/companyhistoryitem_detail.html', {'object': history_item})
+
+def company_history_item_create(request):
+    if request.method == 'POST':
+        form = CompanyHistoryItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('companyhistoryitem-list'))
+    else:
+        form = CompanyHistoryItemForm()
+    return render(request, 'tours/companyhistoryitem_form.html', {'form': form, 'object': None})
+
+def company_history_item_update(request, pk):
+    history_item = get_object_or_404(CompanyHistoryItem, pk=pk)
+    if request.method == 'POST':
+        form = CompanyHistoryItemForm(request.POST, instance=history_item)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('companyhistoryitem-detail', kwargs={'pk': history_item.pk}))
+    else:
+        form = CompanyHistoryItemForm(instance=history_item)
+    return render(request, 'tours/companyhistoryitem_form.html', {'form': form, 'object': history_item})
+
+def company_history_item_delete(request, pk):
+    history_item = get_object_or_404(CompanyHistoryItem, pk=pk)
+    if request.method == 'POST':
+        history_item.delete()
+        return redirect(reverse('companyhistoryitem-list'))
+    return render(request, 'tours/companyhistoryitem_confirm_delete.html', {'object': history_item})
 
 
 class CompanyRequisiteListView(ListView):
